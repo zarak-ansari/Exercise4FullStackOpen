@@ -142,4 +142,22 @@ describe('favorite blog', () => {
             __v: 0
           })
     })
+
+    test('check author with most blogs', ()=>{
+      const result = listHelper.mostBlogs(lotsaBlogs)
+      expect(result).toEqual({
+          author: "Robert C. Martin",
+          blogs: 3
+        })
+    })
+
+    test('check author with most likes', ()=>{
+      const result = listHelper.mostLikes(lotsaBlogs)
+      expect(result).toEqual({
+        author: "Edsger W. Dijkstra",
+        likes: 17
+      })
+    })
+
+
 })
