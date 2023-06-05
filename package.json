@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/zarak-ansari/Exercise4FullStackOpen#readme",
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "globalTeardown": "./tests/teardown.js"
   }
 }
