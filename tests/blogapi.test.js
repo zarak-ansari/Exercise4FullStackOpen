@@ -96,6 +96,55 @@ test('posting a blog with missing url attribute', async () => {
                             .expect(400)
 })
 
+test('deleting a blog', async () => {
+
+    const allBlogsBeforeDelete = await api.get('/api/blogs/')
+
+    const blogToBeDeleted = allBlogsBeforeDelete.body[0]
+
+    const response = await api
+                            .delete('/api/blogs/' + blogToBeDeleted.id)
+                            .expect(204)
+
+    const allBlogsAfterDelete = await api.get('/api/blogs/')
+
+    expect(allBlogsAfterDelete.body).toHaveLength(allBlogsBeforeDelete.body.length - 1)
+})
+
+test('deleting a blog', async () => {
+
+    const allBlogsBeforeDelete = await api.get('/api/blogs/')
+
+    const blogToBeDeleted = allBlogsBeforeDelete.body[0]
+
+    const response = await api
+                            .delete('/api/blogs/' + blogToBeDeleted.id)
+                            .expect(204)
+
+    const allBlogsAfterDelete = await api.get('/api/blogs/')
+
+    expect(allBlogsAfterDelete.body).toHaveLength(allBlogsBeforeDelete.body.length - 1)
+
+    const blogIds = allBlogsAfterDelete.body.map(blog => blog.id)
+
+    expect(blogIds).not.toContain(blogToBeDeleted.id)
+})
+
+test('updating likes of a blog', async () => {
+    const allBlogs = await api.get('/api/blogs/')
+    const blogTobeUpdated = allBlogs.body[0]
+    const initialLikes = blogTobeUpdated.likes
+    blogTobeUpdated.likes += 1
+
+
+    const response = await api
+                        .put('/api/blogs/' + blogTobeUpdated.id)
+                        .send(blogTobeUpdated)
+                        .expect(200)
+    
+    const newLikes = response.body.likes
+    expect(newLikes).toBe(initialLikes + 1)
+})
 
 afterAll(async () => {
     await mongoose.connection.close()
