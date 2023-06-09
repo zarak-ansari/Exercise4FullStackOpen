@@ -12,7 +12,7 @@ usersRouter.post('/', async (request, response) => {
     response.status(400).send({error:"username and password must be atleast 3 characters long"})
   } else {
 
-    const existingUser = User.find({ username:username })
+    const existingUser = await User.findOne({ username })
 
     if(existingUser){
       response.status(400).send({error:"user with this username already exists"})    
