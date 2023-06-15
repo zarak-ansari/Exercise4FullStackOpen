@@ -12,14 +12,7 @@ blogRouter.get('/', async (request, response) => {
   
 blogRouter.post('/', async (request, response) => {
     
-    if(!request.token){
-        return response.status(401).json({error:"missing token"})
-    }
-
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if(!decodedToken){
-        return response.status(401).json({error:"invalid token"})
-    }
+    if(!request.user) return response.status(401).json({error:"invalid user"})
 
     const requestBody = request.body
     
@@ -27,8 +20,8 @@ blogRouter.post('/', async (request, response) => {
         return response.status(400).json({error:"missing title or url"})
     } else {
         requestBody.likes = requestBody.likes || 0
-        const user = await User.findById(decodedToken.id)
-        requestBody.user = user.id
+        const user = request.user
+        requestBody.user = user
         const blog = new Blog(requestBody)
         const savedBlog = await blog.save()
         user.blogs = user.blogs.concat(savedBlog)
@@ -39,29 +32,27 @@ blogRouter.post('/', async (request, response) => {
 
 blogRouter.delete('/:id', async (request, response ) => {
 
-    if(!request.token) return response.status(401).json({error:"missing token"})
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if(!decodedToken) return response.status(401).json({error:"invalid token"})
-
+    if(!request.user) {
+        return response.status(401).json({error:"invalid user"})
+    }
+    const user = request.user
     const blog = await Blog.findById(request.params.id)
 
     const blogCreater = blog.user.toString()
-    const userFromToken = decodedToken.id.toString()
-    if(blogCreater === userFromToken) {
-        const deletedBlog = await Blog.findByIdAndRemove(request.params.id)
-        deletedBlog ?  response.status(204).send(deletedBlog) : response.status(400).end()    
-    } else {
-        return response.status(401).json({error:"invalid user"})
-    }
+    const userInRequest = user.id.toString()
 
-}) 
+    if(blogCreater === userInRequest) {
+        const deletedBlog = await Blog.findByIdAndRemove(request.params.id)
+        deletedBlog ?  response.status(204).json(deletedBlog) : response.status(400).end()    
+    } else {
+        return response.status(403).json({error:"different user than the blog's creater"})
+    }
+})
 
 blogRouter.put('/:id', async (request, response) => {
     const newBlog = request.body
     const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, newBlog, { new:true })
-    response.status(200).send(updatedBlog)
+    response.status(200).json(updatedBlog)
 })
-
-
 
 module.exports = blogRouter
