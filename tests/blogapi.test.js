@@ -8,6 +8,30 @@ const helper = require('./test_helper')
 const initialBlogs = helper.initialBlogs
 const api = supertest(app)
 
+var token 
+
+beforeAll( async () => {
+    const user = {
+        name:"test_user123456",
+        username:"test_user123456",
+        password:"supersecurepassword"
+    }
+
+    const createdUser = await api
+                                .post("/api/users")
+                                .send(user)
+
+
+    const responseTokenObject = await api
+                                    .post("/api/login/")
+                                    .send({
+                                        username:user.username,
+                                        password:user.password
+                                    })
+    console.log(responseTokenObject.body.token)
+    token = "Bearer " + responseTokenObject.body.token
+})
+
 beforeEach( async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(initialBlogs)
@@ -37,9 +61,10 @@ test('posting a new blog works', async () => {
         url: "https://fakesite.com/",
         likes: 1,
     }
-    
+   
     await api
         .post('/api/blogs/')
+        .set("Authorization", token)
         .send(newBlog)
         .expect(201)
     
@@ -105,7 +130,6 @@ test('deleting a blog', async () => {
     const response = await api
                             .delete('/api/blogs/' + blogToBeDeleted.id)
                             .expect(204)
-
     const allBlogsAfterDelete = await api.get('/api/blogs/')
 
     expect(allBlogsAfterDelete.body).toHaveLength(allBlogsBeforeDelete.body.length - 1)
