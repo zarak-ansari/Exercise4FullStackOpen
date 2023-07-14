@@ -54,7 +54,6 @@ describe('posting and deleting blogs with auth', () => {
                                             username:user.username,
                                             password:user.password
                                         })
-        console.log(responseTokenObject.body.token)
         token = "Bearer " + responseTokenObject.body.token
     })
     
