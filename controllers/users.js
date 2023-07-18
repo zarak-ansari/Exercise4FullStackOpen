@@ -15,6 +15,7 @@ usersRouter.post('/', async (request, response) => {
     const existingUser = await User.findOne({ username })
 
     if(existingUser){
+      console.log(JSON.stringify(existingUser))
       response.status(400).send({error:"user with this username already exists"})    
     } else {
 

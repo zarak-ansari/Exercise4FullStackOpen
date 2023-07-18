@@ -12,11 +12,11 @@ blogRouter.get('/', async (request, response) => {
   
 blogRouter.post('/', async (request, response) => {
     
-    if(!request.user) return response.status(401).json({error:"invalid user"})
+    if(request.user == null) return response.status(401).json({error:"invalid user"})
 
     const requestBody = request.body
     
-    if(!requestBody.title || !requestBody.url) {
+    if(requestBody.title == null || requestBody.url == null) {
         return response.status(400).json({error:"missing title or url"})
     } else {
         requestBody.likes = requestBody.likes || 0
@@ -24,7 +24,7 @@ blogRouter.post('/', async (request, response) => {
         requestBody.user = user
         const blog = new Blog(requestBody)
         const savedBlog = await blog.save()
-        user.blogs = user.blogs.concat(savedBlog)
+        user.blogs = user.blogs.concat(savedBlog._id)
         await user.save()
         return response.status(201).json(savedBlog)
     }
@@ -32,7 +32,7 @@ blogRouter.post('/', async (request, response) => {
 
 blogRouter.delete('/:id', async (request, response ) => {
 
-    if(!request.user) {
+    if(request.user === null) {
         return response.status(401).json({error:"invalid user"})
     }
     const user = request.user
@@ -43,7 +43,6 @@ blogRouter.delete('/:id', async (request, response ) => {
 
     if(blogCreater === userInRequest) {
         const deletedBlog = await Blog.findByIdAndRemove(request.params.id)
-        deletedBlog ?  response.status(204).json(deletedBlog) : response.status(400).end()    
     } else {
         return response.status(403).json({error:"different user than the blog's creater"})
     }
